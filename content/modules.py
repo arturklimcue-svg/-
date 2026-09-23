@@ -1813,3 +1813,64 @@ git remote -v
 # Совместимость: id может быть int или str
 for _m in MODULES:
     _m["id"] = str(_m["id"])
+
+# Разделы официальной документации (docs.python.org/3)
+DOCS = {
+    "0": "https://docs.python.org/3/tutorial/index.html",
+    "1": "https://docs.python.org/3/tutorial/datastructures.html",
+    "2": "https://docs.python.org/3/reference/compound_stmts.html",
+    "3": "https://docs.python.org/3/tutorial/controlflow.html",
+    "4": "https://docs.python.org/3/tutorial/modules.html",
+    "5": "https://docs.python.org/3/reference/executionmodel.html",
+    "6": "https://docs.python.org/3/tutorial/classes.html",
+    "7": "https://docs.python.org/3/tutorial/classes.html",
+    "8": "https://docs.python.org/3/tutorial/inputoutput.html",
+    "10": "https://docs.python.org/3/howto/functional.html",
+    "11": "https://docs.python.org/3/library/threading.html",
+    "12": "https://docs.python.org/3/library/multiprocessing.html",
+    "13": "https://docs.python.org/3/library/index.html",
+    "14": "https://docs.python.org/3/library/unittest.html",
+    "15_1": "https://docs.python.org/3/library/asyncio.html",
+    "15_2": "https://docs.python.org/3/library/asyncio.html",
+    "16": "https://docs.python.org/3/library/sqlite3.html",
+    "17": "https://docs.python.org/3/tutorial/classes.html",
+    "18": "https://docs.python.org/3/library/urllib.html",
+    "19": "https://docs.python.org/3/tutorial/stdlib2.html",
+    "20": "https://docs.djangoproject.com/en/stable/topics/http/views/",
+    "21": "https://docs.djangoproject.com/en/stable/",
+    "22": "https://docs.python.org/3/tutorial/index.html",
+    "23": "https://git-scm.com/doc",
+}
+
+# Описание раздела документации для каждого модуля
+DOC_LABELS = {
+    "0": "Официальный учебник Python (Tutorial)",
+    "1": "Структуры данных — вход в data structures",
+    "2": "Составные операторы (if/while/for)",
+    "3": "Управляющие конструкции и функции",
+    "4": "Модули и пакеты (import system)",
+    "5": "Модель исполнения и пространства имён",
+    "6": "Классы — официальный туториал",
+    "7": "Классы: наследование",
+    "8": "Ввод-вывод и форматирование",
+    "10": "Функциональное программирование (HOW-TO)",
+    "11": "Модуль threading",
+    "12": "Модуль multiprocessing",
+    "13": "Справочник стандартной библиотеки",
+    "14": "Модуль unittest (тестирование)",
+    "15_1": "Модуль asyncio (асинхронный код)",
+    "15_2": "Модуль asyncio (применение)",
+    "16": "Модуль sqlite3 (встроенная БД)",
+    "17": "ООП в туториале (основа для ML)",
+    "18": "Модуль urllib (работа с сетью)",
+    "19": "Тур по стандартной библиотеке, часть II",
+    "20": "Django: представления (views)",
+    "21": "Документация Django",
+    "22": "Учебник Python — рекомендации",
+    "23": "Официальная документация Git",
+}
+
+for _m in MODULES:
+    _id = str(_m["id"])
+    _m["doc_url"] = DOCS.get(_id, "https://docs.python.org/3/")
+    _m["doc_label"] = DOC_LABELS.get(_id, "Документация Python")

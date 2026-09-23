@@ -147,6 +147,14 @@ KV = """
                 background_color: utils.get_color_from_hex('#2D7FF9') if self.state == 'down' else utils.get_color_from_hex('#2A2A3A')
                 color: 1, 1, 1, 1
                 on_release: root.show_tab('quiz')
+            ToggleButton:
+                id: tab_docs
+                text: 'Документация'
+                group: 'tabs'
+                background_normal: ''
+                background_color: utils.get_color_from_hex('#2D7FF9') if self.state == 'down' else utils.get_color_from_hex('#2A2A3A')
+                color: 1, 1, 1, 1
+                on_release: root.show_tab('docs')
 
         ScrollView:
             id: scroll
@@ -265,14 +273,74 @@ class ModuleScreen(Screen):
         ids.tab_theory.state = "down" if tab == "theory" else "normal"
         ids.tab_examples.state = "down" if tab == "examples" else "normal"
         ids.tab_quiz.state = "down" if tab == "quiz" else "normal"
+        ids.tab_docs.state = "down" if tab == "docs" else "normal"
         box = ids.content_box
         box.clear_widgets()
         if tab == "theory":
             self._build_theory(box)
         elif tab == "examples":
             self._build_examples(box)
+        elif tab == "docs":
+            self._build_docs(box)
         else:
             self._build_quiz(box)
+
+    # ---- Документация ----
+    def _build_docs(self, box):
+        url = self._module.get("doc_url", "https://docs.python.org/3/")
+        label = self._module.get("doc_label", "Официальная документация")
+        head = Label(
+            text="Официальная документация",
+            color=utils_get("#7CC4FF"),
+            font_size="18sp",
+            bold=True,
+            halign="left",
+            valign="top",
+            size_hint_y=None,
+            height=dp(30),
+        )
+        box.add_widget(head)
+
+        txt = Label(
+            text=f"Раздел: {label}\n\nСсылка:\n{url}\n\n"
+                 "Для открытия в браузере нажмите кнопку ниже.",
+            color=(1, 1, 1, 1),
+            font_size="15sp",
+            halign="left",
+            valign="top",
+            text_size=(self.width - dp(24), None),
+            size_hint_y=None,
+        )
+        txt.bind(width=lambda inst, w: setattr(inst, "text_size", (w, None)),
+                 height=lambda inst, h: setattr(inst, "height", h.texture_size[1] + dp(10)))
+        box.add_widget(txt)
+
+        btn = Button(
+            text="🌐 Открыть документацию",
+            size_hint_y=None,
+            height=dp(52),
+            background_normal="",
+            background_color=utils_get("#2D7FF9"),
+            color=(1, 1, 1, 1),
+            font_size="16sp",
+            bold=True,
+        )
+        btn.bind(on_release=lambda *_: _open_url(url))
+        box.add_widget(btn)
+
+        info = Label(
+            text="* Для работы модуля интернет не обязателен — ссылка "
+                 "открывается при наличии соединения.",
+            color=(0.6, 0.6, 0.6, 1),
+            font_size="13sp",
+            halign="left",
+            valign="top",
+            text_size=(self.width - dp(24), None),
+            size_hint_y=None,
+        )
+        info.bind(width=lambda inst, w: setattr(inst, "text_size", (w, None)),
+                  height=lambda inst, h: setattr(inst, "height", h.texture_size[1] + dp(10)))
+        box.add_widget(info)
 
     # ---- Теория ----
     def _build_theory(self, box):
@@ -444,6 +512,23 @@ def _card(bg_color):
     row.bind(pos=lambda w, v: setattr(rr, 'pos', w.pos),
              size=lambda w, v: setattr(rr, 'size', w.size))
     return row
+
+
+def _open_url(url):
+    """Открыть ссылку в браузере (ПК и Android)."""
+    try:
+        if os.environ.get("ANDROID_ARGUMENT") or hasattr(os, "android"):
+            from android import mActivity
+            from jnius import autoclass
+            Intent = autoclass("android.content.Intent")
+            uri = autoclass("android.net.Uri").parse(url)
+            intent = Intent(Intent.ACTION_VIEW, uri)
+            mActivity.startActivity(intent)
+        else:
+            import webbrowser
+            webbrowser.open(url)
+    except Exception:
+        pass
 
 
 def _mono_font():
