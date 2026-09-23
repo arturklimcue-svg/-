@@ -82,51 +82,16 @@ KV = """
             size_hint_y: None
             height: '14dp'
 
-        RecycleView:
-            id: rv
-            viewclass: 'ModuleItem'
-            data: root.module_data
-            RecycleBoxLayout:
-                default_size: None, dp(64)
-                default_size_hint: 1, None
-                size_hint_y: None
+        ScrollView:
+            id: menu_scroll
+            do_scroll_x: False
+            BoxLayout:
+                id: menu_list
                 orientation: 'vertical'
-
-<ModuleItem@BoxLayout>:
-    id: item
-    title: ''
-    status: ''
-    done: False
-    mid: ''
-    padding: '8dp'
-    spacing: '8dp'
-    size_hint_y: None
-    height: dp(64)
-    canvas.before:
-        Color:
-            rgba: utils.get_color_from_hex('#1E1E2E') if not root.done else utils.get_color_from_hex('#12351F')
-        RoundedRectangle:
-            pos: self.pos
-            size: self.size
-            radius: [8]
-    Label:
-        text: item.title
-        text_size: self.width, None
-        halign: 'left'
-        valign: 'middle'
-        font_size: '15sp'
-        color: 1, 1, 1, 1
-    Label:
-        text: '✓' if root.done else item.status
-        font_size: '20sp'
-        color: utils.get_color_from_hex('#4CAF50') if root.done else (0.5, 0.5, 0.5, 1)
-        size_hint_x: None
-        width: '40dp'
-    FlatButton:
-        text: 'Открыть'
-        size_hint_x: None
-        width: '80dp'
-        on_release: app.open_module(root.mid)
+                padding: '4dp'
+                spacing: '6dp'
+                size_hint_y: None
+                height: self.minimum_height
 
 <ModuleScreen>:
     BoxLayout:
@@ -227,7 +192,6 @@ def done_count():
 class MainMenuScreen(Screen):
     progress_text = StringProperty("")
     progress_value = NumericProperty(0)
-    module_data = ListProperty([])
 
     def on_pre_enter(self):
         self.refresh()
@@ -237,16 +201,46 @@ class MainMenuScreen(Screen):
         total = len(MODULES)
         self.progress_text = f"Изучено {done} из {total} модулей"
         self.progress_value = 100.0 * done / total if total else 0
-        data = []
+        mlist = self.ids.menu_list
+        mlist.clear_widgets()
         for m in MODULES:
             d = is_done(m["id"])
-            data.append({
-                "mid": m["id"],
-                "title": f'{m["id"]}. {m["title"]}',
-                "status": "изучено" if d else "не начато",
-                "done": d,
-            })
-        self.module_data = data
+            row = _card(utils_get('#12351F') if d else utils_get('#1E1E2E'))
+
+            title = Label(
+                text=f'{m["id"]}. {m["title"]}',
+                font_size="15sp",
+                color=(1, 1, 1, 1),
+                halign="left",
+                valign="middle",
+                text_size=(self.width - dp(160), None),
+            )
+            title.bind(size=lambda inst, s: setattr(inst, "text_size", (s[0], None)))
+            row.add_widget(title)
+
+            status = Label(
+                text="✓" if d else "●",
+                font_size="20sp",
+                color=utils_get("#4CAF50") if d else (0.5, 0.5, 0.5, 1),
+                size_hint_x=None, width=dp(28),
+            )
+            row.add_widget(status)
+
+            btn = Button(
+                text="Открыть",
+                size_hint_x=None,
+                width=dp(84),
+                background_normal="",
+                background_color=utils_get("#2D7FF9"),
+                color=(1, 1, 1, 1),
+                font_size="14sp",
+                bold=True,
+            )
+            mid = m["id"]
+            btn.bind(on_release=lambda inst, m_id=mid: App.get_running_app().open_module(m_id))
+            row.add_widget(btn)
+
+            mlist.add_widget(row)
 
 
 class ModuleScreen(Screen):
@@ -438,6 +432,18 @@ def dp(v):
 def utils_get(hex_color):
     from kivy.utils import get_color_from_hex
     return get_color_from_hex(hex_color)
+
+
+def _card(bg_color):
+    from kivy.uix.boxlayout import BoxLayout
+    from kivy.graphics import Color, RoundedRectangle
+    row = BoxLayout(size_hint_y=None, height=dp(60), spacing=dp(8), padding=[dp(8), 0, dp(8), 0])
+    with row.canvas.before:
+        Color(*bg_color)
+        rr = RoundedRectangle(radius=[dp(8)])
+    row.bind(pos=lambda w, v: setattr(rr, 'pos', w.pos),
+             size=lambda w, v: setattr(rr, 'size', w.size))
+    return row
 
 
 def _mono_font():
